@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NGO Dashboard - Smart Food Rescue</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Poppins', sans-serif; background: #f7f8fc; margin:0; padding:20px; }
+  h1, h2 { text-align:center; color:#667eea; margin-bottom:10px; }
+  h2 { color:#764ba2; margin-top: 5px; }
+
+  .section { margin-bottom: 50px; }
+  .list { display:grid; grid-template-columns: repeat(auto-fit, minmax(280px,1fr)); gap:20px; }
+
+  .card {
+    background:#fff;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 8px 25px rgba(0,0,0,0.1);
+    transition:transform 0.3s;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .card:hover { transform: translateY(-5px); }
+  .card h3 { color:#667eea; margin-bottom:5px; }
+  .card p { margin:2px 0; }
+
+  .card button {
+    background:#007bff;
+    color:#fff;
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+  }
+  .card button:hover { background:#0056b3; transform:scale(1.05); }
+
+  a.back-link {
+    display:block;
+    margin:30px auto;
+    text-align:center;
+    font-weight:600;
+    color:#667eea;
+    text-decoration:none;
+    transition:0.3s;
+  }
+  a.back-link:hover { color:#764ba2; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background:#ffc107;
+    color:#000;
+    padding:15px 25px;
+    border-radius:10px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+    font-weight:600;
+    opacity:0;
+    pointer-events:none;
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .toast.show {
+    opacity:1;
+    pointer-events:auto;
+    transform:translateX(-50%) translateY(-10px);
+  }
+</style>
+</head>
+<body>
+
+<h1>🏠 NGO Dashboard</h1>
+<h2>Food Pickups & Deliveries</h2>
+
+<!-- Pending Deliveries -->
+<section class="section">
+  <h2>Pending Deliveries</h2>
+  <div id="pendingList" class="list"></div>
+</section>
+
+<!-- Delivered / History -->
+<section class="section">
+  <h2>Delivered / History</h2>
+  <div id="deliveredList" class="list"></div>
+</section>
+
+<a href="role.html" class="back-link">← Back</a>
+
+<div id="toast" class="toast"></div>
+
+<script>
+async function loadNGO() {
+  try {
+    const res = await fetch("http://localhost:5000/foods");
+    const foods = await res.json();
+
+    let pendingOutput = "";
+    let deliveredOutput = "";
+
+    foods.forEach((item, index) => {
+      const cardHTML = `
+        <div class="card">
+          <h3>${item.name} - ${item.hotel}</h3>
+          <p><b>Quantity:</b> ${item.qty}</p>
+          <p><b>From:</b> ${item.location}</p>
+          <p><b>Pickup Time:</b> ${item.time || "N/A"}</p>
+          <p><b>Expiry:</b> ${item.expiry || "N/A"}</p>
+          ${item.status === "Accepted" ? `<button onclick="deliverFood('${item._id}')">Mark Delivered</button>` : ""}
+          ${item.status !== "Available" ? `<p><b>Status:</b> ${item.status}</p>` : ""}
+          ${item.status === "Accepted" ? `<p><b>Accepted At:</b> ${item.acceptedAt || "N/A"}</p>` : ""}
+          ${item.status === "Delivered" ? `<p><b>Delivered At:</b> ${item.deliveredAt || "N/A"}</p>` : ""}
+        </div>
+      `;
+
+      if(item.status === "Accepted") pendingOutput += cardHTML;
+      if(item.status === "Delivered") deliveredOutput += cardHTML;
+    });
+
+    document.getElementById("pendingList").innerHTML = pendingOutput || "<p style='text-align:center; color:#555;'>No pending deliveries.</p>";
+    document.getElementById("deliveredList").innerHTML = deliveredOutput || "<p style='text-align:center; color:#555;'>No delivered items yet.</p>";
+
+  } catch (err) {
+    console.error("Failed to load foods:", err);
+    document.getElementById("pendingList").innerHTML = "<p>Unable to load data.</p>";
+    document.getElementById("deliveredList").innerHTML = "<p>Unable to load data.</p>";
+  }
+}
+
+window.deliverFood = async function(id) {
+  await fetch(`http://localhost:5000/deliver/${id}`, { method: "POST" });
+  showToast("Food marked as delivered! ✅");
+  loadNGO();
+};
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 4000);
+}
+
+// SSE for accepted foods
+const ngoEvents = new EventSource("http://localhost:5000/events");
+ngoEvents.onmessage = function(event) {
+  const data = JSON.parse(event.data);
+  if (data.type === 'acceptedFood') {
+    showToast(`Food accepted: ${data.food.name} from ${data.food.location}`);
+    loadNGO();
+  }
+};
+
+// Initial load
+loadNGO();
+</script>
+</body>
+</html>

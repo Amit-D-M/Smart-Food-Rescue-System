@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delivery Tracker - Smart Food Rescue</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f4f4f9; margin: 0; padding: 0; }
+    .section { width: 90%; max-width: 1200px; margin: 30px auto; }
+
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+
+    /* Statistics cards */
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    .stats-card {
+      flex: 1 1 150px;
+      margin: 10px;
+      padding: 20px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stats-total { background-color: #343a40; }
+    .stats-available { background-color: #28a745; }
+    .stats-accepted { background-color: #ffc107; color: #000; }
+    .stats-delivered { background-color: #007bff; }
+
+    /* Card styles */
+    .card {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      color: #fff;
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: scale(1.02); }
+
+    /* Status colors */
+    .available { background-color: #28a745; }
+    .accepted { background-color: #ffc107; color: #000; }
+    .delivered { background-color: #007bff; }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .controls input, .controls select {
+      padding: 5px 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+<section class="section">
+  <h1>🚚 Delivery Tracker</h1>
+
+  <!-- Statistics -->
+  <div class="stats-container" id="statsContainer"></div>
+
+  <!-- Search and Filter -->
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search food by name">
+    <select id="statusFilter">
+      <option value="all">All Statuses</option>
+      <option value="Available">Available</option>
+      <option value="Accepted">Accepted</option>
+      <option value="Delivered">Delivered</option>
+    </select>
+    <select id="sortOption">
+      <option value="createdAt">Sort by Added Time</option>
+      <option value="status">Sort by Status</option>
+    </select>
+  </div>
+
+  <!-- Food List -->
+  <div id="deliveryList"></div>
+</section>
+
+<script>
+  let foodsData = [];
+
+  // Load delivery data
+  async function loadDelivery() {
+    try {
+      const res = await fetch("http://localhost:5000/foods");
+      foodsData = await res.json();
+      renderDelivery();
+    } catch (err) {
+      console.error("Failed to load delivery list:", err);
+      document.getElementById("deliveryList").innerHTML = "<p>Unable to load delivery data.</p>";
+    }
+  }
+
+  // Render delivery list and statistics
+  function renderDelivery() {
+    let searchText = document.getElementById("searchInput").value.toLowerCase();
+    let statusFilter = document.getElementById("statusFilter").value;
+    let sortOption = document.getElementById("sortOption").value;
+
+    let filteredFoods = foodsData
+      .filter(f => f.name.toLowerCase().includes(searchText))
+      .filter(f => statusFilter === "all" ? true : f.status === statusFilter);
+
+    // Sorting
+    if (sortOption === "createdAt") {
+      filteredFoods.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortOption === "status") {
+      const statusOrder = { "Available": 1, "Accepted": 2, "Delivered": 3 };
+      filteredFoods.sort((a,b) => statusOrder[a.status] - statusOrder[b.status]);
+    }
+
+    // Calculate statistics
+    let delivered = 0, accepted = 0, available = 0;
+    filteredFoods.forEach(item => {
+      if(item.status === "Delivered") delivered++;
+      else if(item.status === "Accepted") accepted++;
+      else if(item.status === "Available") available++;
+    });
+
+    // Render statistics
+    document.getElementById("statsContainer").innerHTML = `
+      <div class="stats-card stats-total">Total<br>${filteredFoods.length}</div>
+      <div class="stats-card stats-available">Available<br>${available}</div>
+      <div class="stats-card stats-accepted">Accepted<br>${accepted}</div>
+      <div class="stats-card stats-delivered">Delivered<br>${delivered}</div>
+    `;
+
+    // Render food cards
+    let output = "";
+    filteredFoods.forEach(item => {
+      output += `
+        <div class="card ${item.status.toLowerCase()}">
+          <h3>${item.name}</h3>
+          <p><b>Status:</b> ${item.status}</p>
+          <p><b>Quantity:</b> ${item.qty}</p>
+          <p><b>Location:</b> ${item.location}</p>
+          <p><b>Added At:</b> ${item.createdAt ? new Date(item.createdAt).toLocaleString() : "N/A"}</p>
+          <p><b>Accepted At:</b> ${item.acceptedAt ? new Date(item.acceptedAt).toLocaleString() : "N/A"}</p>
+          <p><b>Delivered At:</b> ${item.deliveredAt ? new Date(item.deliveredAt).toLocaleString() : "N/A"}</p>
+        </div>
+      `;
+    });
+
+    document.getElementById("deliveryList").innerHTML = output;
+  }
+
+  // Event listeners for search/filter/sort
+  document.getElementById("searchInput").addEventListener("input", renderDelivery);
+  document.getElementById("statusFilter").addEventListener("change", renderDelivery);
+  document.getElementById("sortOption").addEventListener("change", renderDelivery);
+
+  loadDelivery();
+  setInterval(loadDelivery, 10000); // fallback auto-refresh
+
+  // SSE for real-time updates
+  const deliveryEvents = new EventSource("http://localhost:5000/events");
+  deliveryEvents.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (["newFood", "acceptedFood", "deliveredFood"].includes(data.type)) {
+      loadDelivery(); // refresh immediately
+    }
+  };
+</script>
+
+</body>
+</html>

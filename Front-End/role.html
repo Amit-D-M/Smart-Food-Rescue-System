@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Select Role - Smart Food Rescue</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(120deg, #667eea, #764ba2);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .back-button {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+
+  .back-button:hover {
+    background: rgba(255,255,255,0.35);
+    transform: scale(1.05);
+  }
+
+  h2 {
+    text-align: center;
+    margin: 80px 0 20px;
+    font-size: 2.5em;
+    letter-spacing: 1px;
+    animation: fadeInDown 1s ease forwards;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 25px;
+    width: 90%;
+    max-width: 900px;
+    animation: fadeInUp 1s ease forwards;
+  }
+
+  .role {
+    background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+    padding: 30px 20px;
+    border-radius: 20px;
+    text-align: center;
+    font-size: 1.3em;
+    cursor: pointer;
+    position: relative;
+    transition: transform 0.4s, box-shadow 0.4s;
+    perspective: 1000px;
+    overflow: hidden;
+    color: #fff;
+  }
+
+  .role:hover {
+    transform: translateY(-10px) scale(1.05) rotateX(5deg);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+  }
+
+  .role::before {
+    content: attr(data-emoji);
+    display: block;
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    transition: transform 0.5s;
+  }
+
+  .role:hover::before {
+    transform: rotate(-15deg) scale(1.3);
+  }
+
+  .role::after {
+    content: attr(data-desc);
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s, bottom 0.4s;
+    white-space: nowrap;
+  }
+
+  .role:hover::after {
+    opacity: 1;
+    bottom: -55px;
+  }
+
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: rippleEffect 0.6s linear;
+    background-color: rgba(255,255,255,0.3);
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  @keyframes fadeInDown {
+    0% { opacity: 0; transform: translateY(-30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(30px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes rippleEffect {
+    to { transform: scale(4); opacity: 0; }
+  }
+
+  @media(max-width: 500px) {
+    .role { padding: 25px 15px; font-size: 1.1em; }
+    .role::before { font-size: 2em; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Back Button -->
+<button class="back-button" onclick="goBack()">← Back</button>
+
+<h2>👤 Who Are You?</h2>
+
+<div class="grid">
+  <div class="role" tabindex="0" data-emoji="🍴" data-desc="Add food donations" onclick="go('restaurant.html')">Restaurant</div>
+  <div class="role" tabindex="0" data-emoji="🙋" data-desc="Accept and deliver food" onclick="go('volunteer.html')">Volunteer</div>
+  <div class="role" tabindex="0" data-emoji="🏠" data-desc="Receive donated food" onclick="go('ngo.html')">NGO</div>
+  <div class="role" tabindex="0" data-emoji="🚚" data-desc="Track delivery status" onclick="go('delivery.html')">Delivery</div>
+  <div class="role" tabindex="0" data-emoji="🛠️" data-desc="Admin management panel" onclick="go('admin.html')">Admin</div>
+</div>
+
+<script>
+function go(page) {
+  const selected = event.currentTarget;
+  
+  // Ripple effect
+  const ripple = document.createElement('span');
+  ripple.classList.add('ripple');
+  selected.appendChild(ripple);
+
+  const rect = selected.getBoundingClientRect();
+  ripple.style.left = (event.clientX - rect.left) + 'px';
+  ripple.style.top = (event.clientY - rect.top) + 'px';
+  ripple.addEventListener('animationend', () => ripple.remove());
+
+  setTimeout(() => { window.location.href = page; }, 200);
+}
+
+// Keyboard accessibility: Enter triggers click
+document.querySelectorAll('.role').forEach(role => {
+  role.addEventListener('keypress', e => {
+    if (e.key === "Enter") role.click();
+  });
+});
+
+// Back button function
+function goBack() {
+  window.location.href = 'index.html';
+}
+</script>
+
+</body>
+</html>
