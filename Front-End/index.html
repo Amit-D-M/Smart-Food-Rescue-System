@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Food Rescue</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* RESET & BASE */
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family: 'Poppins', sans-serif; line-height: 1.6; background: #f7f8fc; color: #333; }
+  a { text-decoration: none; color: inherit; }
+  img { max-width: 100%; display: block; }
+
+  /* NAVBAR */
+  nav {
+    position: sticky;
+    top:0;
+    width: 100%;
+    background: #fff;
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 50px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 100;
+  }
+  nav .logo { font-weight: 700; font-size: 1.5em; color: #667eea; }
+  nav ul { display:flex; gap:25px; list-style:none; }
+  nav ul li { font-weight: 500; cursor: pointer; transition: 0.3s; }
+  nav ul li:hover { color: #764ba2; }
+
+  /* HERO */
+  .hero {
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    padding:80px 50px;
+    background: linear-gradient(135deg,#667eea,#764ba2);
+    color:#fff;
+    flex-wrap:wrap;
+    min-height: 400px;
+  }
+  .hero-text { flex:1; min-width:300px; animation: fadeInLeft 1s ease forwards; }
+  .hero-text h1 { font-size:3em; margin-bottom:20px; }
+  .hero-text p { font-size:1.3em; margin-bottom:25px; }
+  .hero-text button { background:#fff; color:#764ba2; font-weight:600; padding:15px 35px; border-radius:10px; border:none; cursor:pointer; transition:0.3s; }
+  .hero-text button:hover { transform: scale(1.05); }
+  .hero-image {
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+    animation: fadeInRight 1s ease forwards;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .hero-image img {
+    width: 100%;
+    max-width: 600px;
+    height: 400px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    object-fit: cover;
+  }
+
+  /* HOW IT WORKS */
+  .steps { display:flex; gap:30px; justify-content:center; flex-wrap:wrap; padding:80px 50px; text-align:center; }
+  .step { background:#fff; padding:30px 20px; border-radius:15px; box-shadow:0 8px 25px rgba(0,0,0,0.1); flex:1; min-width:250px; transition:0.3s; cursor:default; }
+  .step:hover { transform: translateY(-10px); }
+  .step-icon { font-size:2.5em; margin-bottom:15px; color:#667eea; }
+
+  /* STATS */
+  .stats { background:#764ba2; color:#fff; display:flex; justify-content:space-around; flex-wrap:wrap; padding:60px 50px; text-align:center; }
+  .stat { margin:20px; }
+  .stat h3 { font-size:2.5em; margin-bottom:10px; }
+  .stat p { font-size:1.1em; }
+
+  /* FEATURES */
+  .features { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:25px; padding:80px 50px; }
+  .feature { background:#fff; padding:30px 20px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.1); text-align:center; transition:0.3s; cursor:default; }
+  .feature:hover { transform: translateY(-10px); }
+  .feature-icon { font-size:2em; margin-bottom:15px; color:#764ba2; }
+
+  /* TEAM */
+  .team { display:flex; flex-wrap:wrap; justify-content:center; gap:30px; padding:80px 50px; }
+  .member { background:#fff; border-radius:15px; padding:25px 20px; width:200px; text-align:center; box-shadow:0 10px 25px rgba(0,0,0,0.1); transition:0.3s; cursor:default; }
+  .member:hover { transform: translateY(-10px); box-shadow:0 15px 30px rgba(0,0,0,0.2); }
+  .member h4 { font-weight:600; margin-bottom:10px; }
+
+  /* FOOTER */
+  footer { background:#333; color:#fff; text-align:center; padding:30px 20px; }
+  footer a { color:#fff; margin:0 10px; transition:0.2s; }
+  footer a:hover { color:#667eea; }
+
+  /* ANIMATIONS */
+  @keyframes fadeInLeft { 0% { opacity:0; transform:translateX(-50px);} 100%{opacity:1;transform:translateX(0);} }
+  @keyframes fadeInRight { 0% { opacity:0; transform:translateX(50px);} 100%{opacity:1;transform:translateX(0);} }
+
+  @media(max-width:800px){
+    .hero { flex-direction:column; text-align:center; }
+    .hero-text, .hero-image { max-width:100%; }
+    .hero-image img { height: auto; max-width: 90%; margin: 20px auto; }
+    .steps { flex-direction:column; }
+    .stats { flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">SmartFoodRescue</div>
+  <ul>
+    <li onclick="scrollToSection('hero')">Home</li>
+    <li onclick="scrollToSection('steps')">How It Works</li>
+    <li onclick="scrollToSection('stats')">Impact</li>
+    <li onclick="scrollToSection('features')">Features</li>
+    <li onclick="scrollToSection('team')">Team</li>
+    <li onclick="goToRoles()">Enter Platform</li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-text">
+    <h1>🚀 Smart Food Rescue Network</h1>
+    <p>Bridging the gap between food waste and hunger with real-time connections.</p>
+    <button onclick="goToRoles()">Enter Platform</button>
+  </div>
+  <div class="hero-image">
+    <img src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80" alt="Food Rescue">
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="steps" id="steps">
+  <div class="step">
+    <div class="step-icon">🍴</div>
+    <h3>Donate</h3>
+    <p>Restaurants donate surplus food via the platform.</p>
+  </div>
+  <div class="step">
+    <div class="step-icon">🙋</div>
+    <h3>Pick Up</h3>
+    <p>Volunteers collect the food and transport it safely.</p>
+  </div>
+  <div class="step">
+    <div class="step-icon">🏠</div>
+    <h3>Distribute</h3>
+    <p>NGOs receive and distribute food to those in need.</p>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="stats" id="stats">
+  <div class="stat">
+    <h3 id="foodCount">0</h3>
+    <p>Meals Saved</p>
+  </div>
+  <div class="stat">
+    <h3 id="volunteerCount">0</h3>
+    <p>Active Volunteers</p>
+  </div>
+  <div class="stat">
+    <h3 id="ngoCount">0</h3>
+    <p>NGOs Connected</p>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="feature">
+    <div class="feature-icon">🤖</div>
+    <h3>Smart Matching</h3>
+    <p>Optimize delivery routes and match donations efficiently.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">🚚</div>
+    <h3>Live Tracking</h3>
+    <p>Track volunteers and deliveries in real-time.</p>
+  </div>
+  <div class="feature">
+    <div class="feature-icon">📈</div>
+    <h3>Analytics</h3>
+    <p>Insights on food donation and delivery trends.</p>
+  </div>
+</section>
+
+<!-- TEAM NAME -->
+<section class="section alt" style="text-align:center; padding:40px 20px; background:#f0f1f6;">
+  <h2 style="font-size:2.5em; color:#764ba2; margin-bottom:15px;">👨‍💻 Team Alpha Hackers</h2>
+  <p style="font-size:1.2em; color:#333;">Passionate developers making food rescue smarter!</p>
+</section>
+
+<!-- TEAM -->
+<section class="team" id="team">
+  <div class="member"><h4>Amit M</h4><h5 style="color:orangered;">Team Leader</h5></div>
+  <div class="member"><h4>Akash J</h4><h5 style="color:orangered;">Member</h5></div>
+  <div class="member"><h4>Sujeeth S</h4><h5 style="color:orangered;">Member</h5></div>
+  <div class="member"><h4>Chetan B</h4><h5 style="color:orangered;">Member</h5></div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Smart Food Rescue</p>
+  <p>
+    <a href="#">Twitter</a> | <a href="#">LinkedIn</a> | <a href="#">GitHub</a>
+  </p>
+</footer>
+
+<script>
+function goToRoles(){ window.location.href = 'role.html'; }
+
+function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+// Animated counters
+function animateCounters(){
+  const foodCount = document.getElementById('foodCount');
+  const volunteerCount = document.getElementById('volunteerCount');
+  const ngoCount = document.getElementById('ngoCount');
+
+  let f=0, v=0, n=0;
+  const interval = setInterval(()=>{
+    if(f<1250) foodCount.innerText=++f;
+    if(v<75) volunteerCount.innerText=++v;
+    if(n<25) ngoCount.innerText=++n;
+    if(f>=1250 && v>=75 && n>=25) clearInterval(interval);
+  },10);
+}
+function goToRoles(){ window.location.href = 'role.html'; }
+
+function scrollToSection(id){
+  document.getElementById(id).scrollIntoView({behavior:'smooth'});
+}
+
+/* 🔥 LOAD LIVE STATS */
+async function loadStats() {
+  try {
+    const res = await fetch("http://localhost:5000/foods");
+    const foods = await res.json();
+
+    const totalMeals = foods.length;
+    const accepted = foods.filter(f => f.status === "Accepted").length;
+    const delivered = foods.filter(f => f.status === "Delivered").length;
+
+    animateValue("foodCount", totalMeals);
+    animateValue("volunteerCount", accepted);
+    animateValue("ngoCount", delivered);
+
+  } catch (err) {
+    console.error("Stats load error:", err);
+  }
+}
+
+/* 🎯 ANIMATION FUNCTION */
+function animateValue(id, target) {
+  const el = document.getElementById(id);
+  let count = 0;
+
+  const speed = Math.max(10, Math.floor(2000 / (target || 1)));
+
+  const interval = setInterval(() => {
+    count++;
+    el.innerText = count;
+
+    if (count >= target) clearInterval(interval);
+  }, speed);
+}
+
+/* 🔔 REAL-TIME UPDATE (SSE) */
+const statsEvents = new EventSource("http://localhost:5000/events");
+
+statsEvents.onmessage = function(event) {
+  const data = JSON.parse(event.data);
+
+  if (data.type === "newFood" || data.type === "acceptedFood") {
+    loadStats(); // refresh stats live
+  }
+};
+
+/* 🚀 INITIAL LOAD */
+loadStats();
+</script>
+
+</body>
+</html>
