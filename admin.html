@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Smart Food Rescue</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f4f4f9; margin: 0; padding: 0; }
+    .section { width: 90%; max-width: 1200px; margin: 30px auto; }
+
+    h1 { text-align: center; margin-bottom: 20px; color: #333; }
+
+    /* Statistics cards */
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+    .stats-card {
+      flex: 1 1 150px;
+      margin: 10px;
+      padding: 20px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .stats-total { background-color: #343a40; }
+    .stats-available { background-color: #28a745; }
+    .stats-accepted { background-color: #ffc107; color: #000; }
+    .stats-delivered { background-color: #007bff; }
+
+    /* Card styles */
+    .card {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      color: #fff;
+      transition: transform 0.2s;
+    }
+    .card:hover { transform: scale(1.02); }
+
+    /* Status colors */
+    .available { background-color: #28a745; }
+    .accepted { background-color: #ffc107; color: #000; }
+    .delivered { background-color: #007bff; }
+
+    /* Buttons */
+    button {
+      margin-right: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover { opacity: 0.9; }
+    button.edit { background-color: #17a2b8; color: #fff; }
+    button.delete { background-color: #dc3545; color: #fff; }
+
+    /* Filters & Search */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .controls input, .controls select {
+      padding: 5px 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    p { margin: 5px 0; }
+  </style>
+</head>
+<body>
+
+<section class="section">
+  <h1>🛠 Admin Panel</h1>
+
+  <div class="stats-container" id="statsContainer">
+    <!-- Statistics will appear here -->
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search food by name">
+    <select id="statusFilter">
+      <option value="all">All Statuses</option>
+      <option value="Available">Available</option>
+      <option value="Accepted">Accepted</option>
+      <option value="Delivered">Delivered</option>
+    </select>
+    <select id="sortOption">
+      <option value="createdAt">Sort by Added Time</option>
+      <option value="status">Sort by Status</option>
+    </select>
+  </div>
+
+  <div id="adminPanel"></div>
+</section>
+
+<script>
+  let foodsData = [];
+
+  // Load admin panel data
+  async function loadAdmin() {
+    try {
+      const res = await fetch("http://localhost:5000/foods");
+      foodsData = await res.json();
+      renderAdmin();
+    } catch (err) {
+      console.error("Failed to load admin panel:", err);
+      document.getElementById("adminPanel").innerHTML = "<p>Unable to load data.</p>";
+    }
+  }
+
+  // Render statistics and food cards
+  function renderAdmin() {
+    let searchText = document.getElementById("searchInput").value.toLowerCase();
+    let statusFilter = document.getElementById("statusFilter").value;
+    let sortOption = document.getElementById("sortOption").value;
+
+    let filteredFoods = foodsData
+      .filter(f => f.name.toLowerCase().includes(searchText))
+      .filter(f => statusFilter === "all" ? true : f.status === statusFilter);
+
+    if (sortOption === "createdAt") {
+      filteredFoods.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else if (sortOption === "status") {
+      const statusOrder = { "Available": 1, "Accepted": 2, "Delivered": 3 };
+      filteredFoods.sort((a,b) => statusOrder[a.status] - statusOrder[b.status]);
+    }
+
+    // Calculate statistics
+    let delivered = 0, accepted = 0, available = 0;
+    filteredFoods.forEach(item => {
+      if(item.status === "Delivered") delivered++;
+      else if(item.status === "Accepted") accepted++;
+      else if(item.status === "Available") available++;
+    });
+
+    // Render statistics cards at the top
+    document.getElementById("statsContainer").innerHTML = `
+      <div class="stats-card stats-total">Total Foods<br>${filteredFoods.length}</div>
+      <div class="stats-card stats-available">Available<br>${available}</div>
+      <div class="stats-card stats-accepted">Accepted<br>${accepted}</div>
+      <div class="stats-card stats-delivered">Delivered<br>${delivered}</div>
+    `;
+
+    // Render food cards
+    let output = "";
+    filteredFoods.forEach((item, index) => {
+      output += `
+        <div class="card ${item.status.toLowerCase()}">
+          <h3>${item.name}</h3>
+          <p><b>Qty:</b> ${item.qty}</p>
+          <p><b>Location:</b> ${item.location}</p>
+          <p><b>Status:</b> ${item.status}</p>
+          <p><b>Added At:</b> ${item.createdAt ? new Date(item.createdAt).toLocaleString() : "N/A"}</p>
+          <p><b>Accepted At:</b> ${item.acceptedAt ? new Date(item.acceptedAt).toLocaleString() : "N/A"}</p>
+          <p><b>Delivered At:</b> ${item.deliveredAt ? new Date(item.deliveredAt).toLocaleString() : "N/A"}</p>
+          <button class="edit" onclick="editFood(${index})">Edit</button>
+          <button class="delete" onclick="deleteFood(${index})">Delete</button>
+        </div>
+      `;
+    });
+
+    document.getElementById("adminPanel").innerHTML = output;
+  }
+
+  // Edit food
+  window.editFood = async (id) => {
+    let name = prompt("New Food Name:", foodsData[id].name);
+    let qty = prompt("New Quantity:", foodsData[id].qty);
+    let location = prompt("New Location:", foodsData[id].location);
+    if (name && qty && location) {
+      await fetch(`http://localhost:5000/edit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, qty, location })
+      });
+      loadAdmin();
+    }
+  };
+
+  // Delete food
+  window.deleteFood = async (id) => {
+    if (confirm("Are you sure you want to delete this food item?")) {
+      await fetch(`http://localhost:5000/delete/${id}`, { method: "POST" });
+      loadAdmin();
+    }
+  };
+
+  // Event listeners for search/filter/sort
+  document.getElementById("searchInput").addEventListener("input", renderAdmin);
+  document.getElementById("statusFilter").addEventListener("change", renderAdmin);
+  document.getElementById("sortOption").addEventListener("change", renderAdmin);
+
+  loadAdmin();
+  setInterval(loadAdmin, 10000); // Auto-refresh fallback
+
+  // SSE for real-time updates
+  const adminEvents = new EventSource("http://localhost:5000/events");
+  adminEvents.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    if (["newFood", "acceptedFood", "deliveredFood"].includes(data.type)) {
+      loadAdmin(); // update panel immediately
+    }
+  };
+</script>
+
+</body>
+</html>

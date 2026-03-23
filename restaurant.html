@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Restaurant - Smart Food Rescue</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: #f7f8fc;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h2 {
+    margin-top: 50px;
+    color: #667eea;
+    font-size: 2em;
+  }
+
+  .card {
+    background: #fff;
+    padding: 30px 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    margin: 30px 0;
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: transform 0.3s;
+  }
+
+  .card:hover { transform: translateY(-5px); }
+
+  .card input {
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    transition: 0.3s;
+  }
+
+  .card input:focus {
+    border-color: #667eea;
+    outline: none;
+    box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+  }
+
+  .card button {
+    background: #667eea;
+    color: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+
+  .card button:hover {
+    background: #764ba2;
+    transform: scale(1.05);
+  }
+
+  a.back-link {
+    margin-bottom: 50px;
+    font-weight: 600;
+    color: #667eea;
+    text-decoration: none;
+    transition: 0.3s;
+  }
+
+  a.back-link:hover { color: #764ba2; }
+
+  /* Toast Message */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #28a745;
+    color: #fff;
+    padding: 15px 25px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    font-weight: 600;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s, transform 0.5s;
+  }
+
+  .toast.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(-10px);
+  }
+</style>
+</head>
+<body>
+
+<h2>🍴 Post Surplus Food</h2>
+
+<div class="card">
+  <input id="hotel" placeholder="Hotel / Restaurant Name" required>
+  <input id="food" placeholder="Food Name" required>
+  <input id="qty" placeholder="Quantity" required>
+  <input id="location" placeholder="Pickup Location" required>
+  <input id="time"  placeholder="Pickup Time">
+  <input id="expiry"  placeholder="Expiry Time">
+  <button onclick="addFood()">Post Food</button>
+</div>
+
+<a href="role.html" class="back-link">← Back</a>
+
+<!-- Toast message -->
+<div id="toast" class="toast">Thank you for donating food💚! This Kind gesture feeds many innocent Souls!</div>
+
+<script>
+async function addFood() {
+  const hotel = document.getElementById("hotel").value;
+  const name = document.getElementById("food").value;
+  const qty = document.getElementById("qty").value;
+  const location = document.getElementById("location").value;
+  const time = document.getElementById("time").value;
+  const expiry = document.getElementById("expiry").value;
+  const postTime = new Date().toLocaleString();
+
+  if (!hotel || !name || !qty || !location) {
+    alert("Please fill all required fields!");
+    return;
+  }
+
+  await fetch("http://localhost:5000/add-food", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ hotel, name, qty, location, time, expiry, postTime })
+  });
+
+  showToast();
+
+  // Clear inputs after posting
+  document.getElementById("hotel").value = "";
+  document.getElementById("food").value = "";
+  document.getElementById("qty").value = "";
+  document.getElementById("location").value = "";
+  document.getElementById("time").value = "";
+  document.getElementById("expiry").value = "";
+}
+
+function showToast() {
+  const toast = document.getElementById("toast");
+  toast.classList.add("show");
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000); // disappears after 3 seconds
+}
+</script>
+
+</body>
+</html>
